@@ -1,6 +1,7 @@
 mycal today
 mycal today --all
 mycal today --json
+mycal today --after 13:00
 mycal t
 
 mycal tomorrow
