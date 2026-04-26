@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/MikelMelnichuk/mycal/internal/models"
 )
@@ -16,7 +17,14 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func (c *Client) GetDayEvent(targetDateStr string, all bool, after string) ([]models.Event, error) {
+func NewClient(baseURL string, timeout time.Duration) *Client {
+	return &Client{
+		BaseURL:    baseURL,
+		HTTPClient: nil,
+	}
+}
+
+func (c *Client) GetDayEvents(targetDateStr string, all bool, after string) ([]models.Event, error) {
 	return nil, nil
 }
 
