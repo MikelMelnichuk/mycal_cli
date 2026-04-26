@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/MikelMelnichuk/mycal/internal/formatter"
 	"github.com/spf13/cobra"
 )
+
+const YYYYMMDD = "2006-01-02"
 
 var todayCmd = &cobra.Command{
 	Use:     "today",
@@ -15,7 +18,8 @@ var todayCmd = &cobra.Command{
 		jsonOut, _ := cmd.Flags().GetBool("json")
 		after, _ := cmd.Flags().GetString("after")
 
-		targetDate := time.Now().Format("YYYY-MM-DD")
+		targetDate := time.Now().Format(YYYYMMDD)
+		fmt.Printf("targetDate: %q\n", targetDate)
 		events, err := APIClient.GetDayEvents(targetDate, all, after)
 		if err != nil {
 			return err
