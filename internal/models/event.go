@@ -7,5 +7,5 @@ type Event struct {
 	Title string    `json:"title"`
 	Start time.Time `json:"start"`
 	End   time.Time `json:"end"`
-	Day   string    `json:"day"` // e.g., "2026-03-18"
+	Day   string    `json:"day"` // YYYY-MM-DD format (e.g., "2026-03-18")
 }
