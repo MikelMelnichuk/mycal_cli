@@ -3,12 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/MikelMelnichuk/mycal/internal/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+const YYYYMMDD = "2006-01-02"
 
 var (
 	cfgFile    string
@@ -22,7 +23,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "mycal",
 	Short: "CLI for managing calendar events",
-	Long: `mycal is a command-line tool to view and interact with your calendar events.
+	Long: `mycal is a CLI tool to view and interact with your calendar events.
 It communicates with a backend API to fetch events for days, weeks, or specific IDs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help() // just show help if no subcommand is given
@@ -37,11 +38,11 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 		// Create API client
 		timeout := viper.GetDuration("api.timeout")
 		if timeout == 0 {
-			timeout = 10 * time.Second
+			timeout = api.DEFAULT_TIMEOUT
 		}
 		APIClient = api.NewClient(apiBaseURL, timeout)
 
-		// TODO: test connectivity?
+		// TODO: test connectivity? we have / and /health
 		return nil
 	},
 }
@@ -64,7 +65,7 @@ func init() {
 	_ = viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("api-url"))
 	_ = viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
-	// Set environment variable prefix: MYCAL_API_URL, MYCAL_VERBOSE, etc.
+	// Set environment variable prefix: MYCAL_API_URL, MYCAL_TIMEOUT, etc.
 	viper.SetEnvPrefix("MYCAL")
 	viper.AutomaticEnv()
 }
@@ -89,7 +90,7 @@ func initConfig() error {
 	if err := viper.ReadInConfig(); err != nil {
 		// It's okay if there's no config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// TODO: create a default
+			// TODO: create a default config???
 		} else {
 			return err
 		}
