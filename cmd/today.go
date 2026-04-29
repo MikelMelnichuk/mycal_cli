@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const YYYYMMDD = "2006-01-02"
-
 var todayCmd = &cobra.Command{
 	Use:     "today",
 	Aliases: []string{"t"},
@@ -17,6 +15,11 @@ var todayCmd = &cobra.Command{
 		all, _ := cmd.Flags().GetBool("all")
 		jsonOut, _ := cmd.Flags().GetBool("json")
 		after, _ := cmd.Flags().GetString("after")
+
+		// The "after" command takes priority above "all" command
+		if after != "" {
+			all = false
+		}
 
 		targetDate := time.Now().Format(YYYYMMDD)
 		fmt.Printf("targetDate: %q\n", targetDate)
@@ -35,7 +38,7 @@ var todayCmd = &cobra.Command{
 }
 
 func init() {
-	// Add flags to todayCmd
+	// Define expected flags for todayCmd
 	todayCmd.Flags().Bool("all", false, "Show all events (including past ones)")
 	todayCmd.Flags().Bool("json", false, "Output as JSON")
 	todayCmd.Flags().String("after", "", "Filter events after given time (e.g., 12:00)")
