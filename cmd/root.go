@@ -41,7 +41,7 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 		}
 		APIClient = api.NewClient(apiBaseURL, timeout)
 
-		// TODO: Optionally test connectivity?
+		// TODO: test connectivity?
 		return nil
 	},
 }
@@ -58,7 +58,7 @@ func Execute() {
 func init() {
 	// Global persistent flags
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mycal.yaml)")
-	rootCmd.PersistentFlags().StringVar(&apiBaseURL, "api-url", "http://localhost:8080/api/v1", "backend API base URL")
+	rootCmd.PersistentFlags().StringVar(&apiBaseURL, "api-url", api.DEFAULT_BASE_IP, "backend API base URL")
 
 	// Bind flags to viper so they can be overridden by env or config file
 	_ = viper.BindPFlag("api.url", rootCmd.PersistentFlags().Lookup("api-url"))
@@ -67,7 +67,6 @@ func init() {
 	// Set environment variable prefix: MYCAL_API_URL, MYCAL_VERBOSE, etc.
 	viper.SetEnvPrefix("MYCAL")
 	viper.AutomaticEnv()
-
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -102,7 +101,7 @@ func initConfig() error {
 	}
 
 	// Also read from viper config (lower priority than env)
-	if viper.IsSet("api.url") && apiBaseURL == "http://localhost:8080/api/v1" {
+	if viper.IsSet("api.url") && apiBaseURL == api.DEFAULT_BASE_IP {
 		apiBaseURL = viper.GetString("api.url")
 	}
 
