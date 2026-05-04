@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/MikelMelnichuk/mycal/internal/api"
 	"github.com/spf13/cobra"
@@ -28,7 +29,7 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help() // just show help if no subcommand is given
 	},
-	// Persistent pre-run hook – initializes API client before any command runs
+	// Persistent pre-run hook initializes API client before any command runs
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Load configuration (file, env, flags)
 		if err := initConfig(); err != nil {
@@ -40,6 +41,7 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 		if timeout == 0 {
 			timeout = api.DEFAULT_TIMEOUT
 		}
+		fmt.Printf("apiBaseURL: %q, timeout: %s\n", apiBaseURL, timeout)
 		APIClient = api.NewClient(apiBaseURL, timeout)
 
 		// TODO: test connectivity? we have / and /health
@@ -81,6 +83,7 @@ func initConfig() error {
 		if err != nil {
 			return err
 		}
+		// TODO: move to ~/.config/
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".mycal")
@@ -90,13 +93,19 @@ func initConfig() error {
 	if err := viper.ReadInConfig(); err != nil {
 		// It's okay if there's no config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// TODO: create a default config???
+			if err := createDefaultConfig(); err != nil {
+				return err
+			}
+			// Attempt to read the config after its creation
+			if err := viper.ReadInConfig(); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
 	}
 
-	// Override with environment variables: MYCAL_API_URL, MYCAL_VERBOSE
+	// Override with environment variables: MYCAL_API_URL and MYCAL_TIMEOUT
 	if envURL := os.Getenv("MYCAL_API_URL"); envURL != "" {
 		apiBaseURL = envURL
 	}
@@ -104,6 +113,38 @@ func initConfig() error {
 	// Also read from viper config (lower priority than env)
 	if viper.IsSet("api.url") && apiBaseURL == api.DEFAULT_BASE_IP {
 		apiBaseURL = viper.GetString("api.url")
+	}
+
+	return nil
+}
+
+func createDefaultConfig() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	configPath := filepath.Join(home, ".mycal.yaml")
+
+	// Check if config already exists; if yes, do nothing.
+	if _, err := os.Stat(configPath); err == nil {
+		// File exists – nothing to do.
+		return nil
+	} else if !os.IsNotExist(err) {
+		// Some other error (e.g., permission denied).
+		return err
+	}
+
+	// Default configuration content.
+	defaultConfig := fmt.Sprintf(`api:
+  url: %s
+  timeout: %s
+`, api.DEFAULT_BASE_IP, api.DEFAULT_TIMEOUT)
+
+	// Write the file with read/write permissions for the owner.
+	err = os.WriteFile(configPath, []byte(defaultConfig), 0644)
+	if err != nil {
+		return err
 	}
 
 	return nil
