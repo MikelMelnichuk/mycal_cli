@@ -39,7 +39,6 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 		if timeout == 0 {
 			timeout = api.DEFAULT_TIMEOUT
 		}
-		fmt.Printf("apiBaseURL: %q, timeout: %s\n", apiBaseURL, timeout)
 		APIClient = api.NewClient(apiBaseURL, timeout)
 
 		// TODO: test connectivity? we have / and /health
