@@ -50,8 +50,8 @@ var dateCmd = &cobra.Command{
 
 func init() {
 	// Define the flags that given command expects to receive
-	dateCmd.Flags().Bool("json", false, "Output as JSON")
-	dateCmd.Flags().String("after", "", "Filter events after given time (e.g., 12:00)")
+	dateCmd.Flags().Bool("json", false, JsonDescription)
+	dateCmd.Flags().String("after", "", AfterDescription)
 
 	rootCmd.AddCommand(dateCmd)
 }

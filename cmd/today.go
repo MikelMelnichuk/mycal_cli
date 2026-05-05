@@ -46,9 +46,9 @@ var todayCmd = &cobra.Command{
 
 func init() {
 	// Define expected flags for todayCmd
-	todayCmd.Flags().Bool("all", false, "Show all events (including past ones)")
-	todayCmd.Flags().Bool("json", false, "Output as JSON")
-	todayCmd.Flags().String("after", "", "Filter events after given time (e.g., 12:00)")
+	todayCmd.Flags().Bool("all", false, AllDescription)
+	todayCmd.Flags().Bool("json", false, JsonDescription)
+	todayCmd.Flags().String("after", "", AfterDescription)
 
 	// Register the command with rootCmd
 	rootCmd.AddCommand(todayCmd)
