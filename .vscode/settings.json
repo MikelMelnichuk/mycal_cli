@@ -53,5 +53,9 @@
     // Json setting
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features",
-    }
+    },
+    "cSpell.words": [
+        "Melnichuk",
+        "Mikel"
+    ]
 }
