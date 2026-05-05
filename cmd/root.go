@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const YYYYMMDD = "2006-01-02"
-
 var (
 	cfgFile    string
 	apiBaseURL string
@@ -50,7 +48,6 @@ It communicates with a backend API to fetch events for days, weeks, or specific 
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main().
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		// Cobra already prints the error, but we can add extra handling
@@ -123,7 +120,6 @@ func createDefaultConfig() error {
 	if err != nil {
 		return err
 	}
-
 	configPath := filepath.Join(home, ".mycal.yaml")
 
 	// Check if config already exists; if yes, do nothing.
