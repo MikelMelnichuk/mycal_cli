@@ -18,11 +18,18 @@ var todayCmd = &cobra.Command{
 
 		// The "after" command takes priority above "all" command
 		if after != "" {
+			validInputFlag := isValidTime(after)
+			if !validInputFlag {
+				return fmt.Errorf("Could not parse the given flag after %q, time of the format HH:MM is expected", after)
+			}
+			// When given a starting hour, all day flag is irrelevant
 			all = false
+		} else {
+			after = time.Now().Format(HHMM)
 		}
 
-		targetDate := time.Now().Format(YYYYMMDD)
-		fmt.Printf("targetDate: %q\n", targetDate)
+		// Take today's date in YYYYMMDD format
+		var targetDate = time.Now().Format(YYYYMMDD)
 		events, err := APIClient.GetDayEvents(targetDate, all, after)
 		if err != nil {
 			return err
