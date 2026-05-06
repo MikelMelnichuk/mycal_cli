@@ -31,7 +31,6 @@ func NewClient(baseURL string, timeout time.Duration) *Client {
 }
 
 func (c *Client) GetDayEvents(targetDate string, all bool, after string) ([]models.Event, error) {
-	fmt.Printf("GetDayEvents got targetDate: %s, all: %t, after: %q\n", targetDate, all, after)
 
 	// Get the endpoint
 	endpoint := c.BaseURL + "/events/day"

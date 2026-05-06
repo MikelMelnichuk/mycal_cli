@@ -19,7 +19,6 @@ var tomorrowCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var json, _ = cmd.Flags().GetBool("json")
 		var after, _ = cmd.Flags().GetString("after")
-		fmt.Printf("Tomorrow got json: %t, after: %s\n", json, after)
 
 		all := true
 		if after != "" {
@@ -41,7 +40,7 @@ var tomorrowCmd = &cobra.Command{
 		if json {
 			formatter.PrintJSON(tomorrowEvents)
 		} else {
-			formatter.PrintText(tomorrowEvents)
+			formatter.PrettyPrintSingleDay(tomorrowEvents)
 		}
 
 		return nil

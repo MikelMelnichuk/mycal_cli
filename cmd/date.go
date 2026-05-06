@@ -15,8 +15,6 @@ var dateCmd = &cobra.Command{
 		var json, _ = cmd.Flags().GetBool("json")
 		var after, _ = cmd.Flags().GetString("after")
 
-		fmt.Printf("Date got json: %t, after: %s\n", json, after)
-
 		all := true
 		if after != "" {
 			validInput := isValidTime(after)
@@ -41,7 +39,7 @@ var dateCmd = &cobra.Command{
 		if json {
 			formatter.PrintJSON(dateEvents)
 		} else {
-			formatter.PrintText(dateEvents)
+			formatter.PrettyPrintSingleDay(dateEvents)
 		}
 
 		return nil

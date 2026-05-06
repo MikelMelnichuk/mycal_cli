@@ -25,7 +25,7 @@ var weekCMD = &cobra.Command{
 		if json {
 			formatter.PrintJSON(weekEvents)
 		} else {
-			formatter.PrintText(weekEvents)
+			formatter.PrettyPrintSingleDay(weekEvents)
 		}
 
 		return nil

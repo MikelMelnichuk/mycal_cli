@@ -38,7 +38,7 @@ var todayCmd = &cobra.Command{
 		if jsonOut {
 			formatter.PrintJSON(events)
 		} else {
-			formatter.PrintText(events)
+			formatter.PrettyPrintSingleDay(events)
 		}
 		return nil
 	},
