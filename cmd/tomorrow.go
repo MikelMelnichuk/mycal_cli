@@ -40,7 +40,7 @@ var tomorrowCmd = &cobra.Command{
 		if json {
 			formatter.PrintJSON(tomorrowEvents)
 		} else {
-			formatter.PrettyPrintSingleDay(tomorrowEvents)
+			formatter.PrettyPrintSingleDay(tomorrowEvents, true)
 		}
 
 		return nil

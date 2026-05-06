@@ -39,7 +39,7 @@ var dateCmd = &cobra.Command{
 		if json {
 			formatter.PrintJSON(dateEvents)
 		} else {
-			formatter.PrettyPrintSingleDay(dateEvents)
+			formatter.PrettyPrintSingleDay(dateEvents, true)
 		}
 
 		return nil

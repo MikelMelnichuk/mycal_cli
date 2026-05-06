@@ -8,26 +8,51 @@ import (
 	"github.com/MikelMelnichuk/mycal/internal/models"
 )
 
-func PrettyPrintSingleDay(events []models.Event) {
+// PrettyPrintWeek prints events grouped by day for a week.
+// Events can be for any set of days (max 7, but not required).
+func PrettyPrintWeek(events []models.Event) {
+	if len(events) == 0 {
+		fmt.Println("No events this week.")
+		return
+	}
+
+	start := 0
+	for i, e := range events {
+		if e.Day != events[start].Day {
+			PrettyPrintSingleDay(events[start:i], false)
+			start = i
+		}
+	}
+	PrettyPrintSingleDay(events[start:], false)
+}
+
+func PrettyPrintSingleDay(events []models.Event, verbose bool) {
 	if len(events) == 0 {
 		fmt.Println("No events for this day.")
 		return
 	}
 
 	// Determine column headers and widths
-	headers := []string{"Title", "Start", "End", "ID"}
+	headers := []string{"Title", "Start", "End"}
+	colWidths := []int{len(headers[0]), len(headers[1]), len(headers[2])}
 
-	// Start with header lengths
-	colWidths := []int{len(headers[0]), len(headers[1]), len(headers[2]), len(headers[3])}
+	if verbose {
+		headers = append(headers, "ID")
+		colWidths = append(colWidths, len("ID"))
+	}
+
+	numCols := len(headers)
 
 	// Collect row data and adjust column widths
 	rows := make([][]string, len(events))
 	for i, e := range events {
-		row := []string{e.Title, e.Start, e.End, e.ID}
+		row := []string{e.Title, e.Start, e.End}
+		if verbose {
+			row = append(row, e.ID)
+		}
 		rows[i] = row
 		for j, cell := range row {
-			// For Title, limit width to 40 characters to avoid overly wide tables
-			if j == 1 && utf8.RuneCountInString(cell) > 40 {
+			if j == 0 && utf8.RuneCountInString(cell) > 40 {
 				cell = truncate(cell, 40)
 				rows[i][j] = cell
 			}
@@ -39,39 +64,45 @@ func PrettyPrintSingleDay(events []models.Event) {
 	}
 
 	// Build format string for each row
-	format := "│ %-*s │ %-*s │ %-*s │ %-*s │\n"
+	format := strings.Repeat("│ %-*s ", numCols) + "│\n"
+
+	// Helper to print a single row
+	printRow := func(cells []string) {
+		args := make([]any, 0, numCols*2)
+		for i := 0; i < numCols; i++ {
+			args = append(args, colWidths[i], cells[i])
+		}
+		fmt.Printf(format, args...)
+	}
+
+	// Build top border, separator, bottom border dynamically
+	buildBorder := func(left, mid, right string) string {
+		var parts []string
+		for i, w := range colWidths {
+			if i == 0 {
+				parts = append(parts, left+strings.Repeat("─", w+2))
+			} else {
+				parts = append(parts, strings.Repeat("─", w+2))
+			}
+		}
+		return strings.Join(parts, mid) + right
+	}
+
+	topBorder := buildBorder("┌", "┬", "┐")
+	sep := buildBorder("├", "┼", "┤")
+	bottomBorder := buildBorder("└", "┴", "┘")
 
 	// Day header
 	day := events[0].Day
 	fmt.Printf("\n📅 Events for %s:\n\n", day)
 
-	// Top border
-	topBorder := "┌" + strings.Repeat("─", colWidths[0]+2) + "┬" +
-		strings.Repeat("─", colWidths[1]+2) + "┬" +
-		strings.Repeat("─", colWidths[2]+2) + "┬" +
-		strings.Repeat("─", colWidths[3]+2) + "┐"
+	// Print table
 	fmt.Println(topBorder)
-
-	// Header row
-	fmt.Printf(format, colWidths[0], headers[0], colWidths[1], headers[1], colWidths[2], headers[2], colWidths[3], headers[3])
-
-	// Separator
-	sep := "├" + strings.Repeat("─", colWidths[0]+2) + "┼" +
-		strings.Repeat("─", colWidths[1]+2) + "┼" +
-		strings.Repeat("─", colWidths[2]+2) + "┼" +
-		strings.Repeat("─", colWidths[3]+2) + "┤"
+	printRow(headers)
 	fmt.Println(sep)
-
-	// Data rows
 	for _, row := range rows {
-		fmt.Printf(format, colWidths[0], row[0], colWidths[1], row[1], colWidths[2], row[2], colWidths[3], row[3])
+		printRow(row)
 	}
-
-	// Bottom border
-	bottomBorder := "└" + strings.Repeat("─", colWidths[0]+2) + "┴" +
-		strings.Repeat("─", colWidths[1]+2) + "┴" +
-		strings.Repeat("─", colWidths[2]+2) + "┴" +
-		strings.Repeat("─", colWidths[3]+2) + "┘"
 	fmt.Println(bottomBorder)
 }
 

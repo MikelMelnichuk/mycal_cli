@@ -23,7 +23,7 @@ var nextWeekCMD = &cobra.Command{
 		if json {
 			formatter.PrintJSON(events)
 		} else {
-			formatter.PrettyPrintSingleDay(events)
+			formatter.PrettyPrintWeek(events)
 		}
 
 		return nil
