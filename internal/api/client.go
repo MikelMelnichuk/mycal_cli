@@ -33,7 +33,7 @@ func NewClient(baseURL string, timeout time.Duration) *Client {
 func (c *Client) GetDayEvents(targetDate string, all bool, after string) ([]models.Event, error) {
 
 	// Get the endpoint
-	endpoint := c.BaseURL + "/events/day"
+	endpoint := c.BaseURL + "api/v1/events/day"
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid base url: %w", err)
@@ -86,7 +86,7 @@ func (c *Client) GetDayEvents(targetDate string, all bool, after string) ([]mode
 func (c *Client) GetWeekEvents(next bool, all bool) ([]models.Event, error) {
 
 	// Define the endpoint to be used
-	endpoint := c.BaseURL + "/events/week"
+	endpoint := c.BaseURL + "api/v1/events/week"
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid base url: %w", err)
@@ -135,6 +135,62 @@ func (c *Client) GetEventByID(eventID string) (*models.Event, error) {
 	return nil, nil
 }
 
-func (c *Client) HealthCheck() error {
+func (c *Client) HealthCheckBackend() error {
+	// Define the endpoint to be used
+	endpoint := c.BaseURL
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return fmt.Errorf("Invalid base url: %w", err)
+	}
+
+	// Send the request to the backend server
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Process the received response
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("HTTP request failed: %w", err)
+	}
+
+	// Handle error that come from the server as a response
+	if resp.StatusCode < 200 || resp.StatusCode > 300 {
+		return fmt.Errorf("API error: %d - %s", resp.StatusCode, resp.Body)
+	}
+
+	fmt.Println("Communication with backend was established")
+
+	return nil
+}
+
+func (c *Client) HealthCheckDB() error {
+	// Define the endpoint to be used
+	endpoint := c.BaseURL + "api/v1/health"
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return fmt.Errorf("Invalid base url: %w", err)
+	}
+
+	// Send the request to the backend server
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Process the received response
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("HTTP request failed: %w", err)
+	}
+
+	// Handle error that come from the server as a response
+	if resp.StatusCode < 200 || resp.StatusCode > 300 {
+		return fmt.Errorf("API error: %d - %s", resp.StatusCode, resp.Body)
+	}
+
+	fmt.Println("Communication with backend and DB was established")
+
 	return nil
 }
