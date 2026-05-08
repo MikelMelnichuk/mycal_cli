@@ -52,6 +52,7 @@ func PrettyPrintSingleDay(events []models.Event, verbose bool) {
 		}
 		rows[i] = row
 		for j, cell := range row {
+			// Truncate the Title if needed
 			if j == 0 && utf8.RuneCountInString(cell) > 40 {
 				cell = truncate(cell, 40)
 				rows[i][j] = cell
