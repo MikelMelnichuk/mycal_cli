@@ -1,14 +1,16 @@
 package formatter
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/MikelMelnichuk/mycal/internal/models"
 )
 
 func PrintJSON(events []models.Event) {
-	fmt.Println("Json Print")
-	for _, e := range events {
-		fmt.Printf("Title: %s, time %s-%s, day %s, id %q\n", e.Title, e.Start, e.End, e.Day, e.ID)
+	data, err := json.MarshalIndent(events, "", "  ")
+	if err != nil {
+		fmt.Printf("Could not convert to json %s\n", err)
 	}
+	fmt.Println(string(data))
 }
