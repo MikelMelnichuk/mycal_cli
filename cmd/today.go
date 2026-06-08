@@ -8,6 +8,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// mycal today
+// mycal today --all
+// mycal today --json
+// mycal today --after 13:00
+// mycal t
+
 var todayCmd = &cobra.Command{
 	Use:     "today",
 	Aliases: []string{"t"},

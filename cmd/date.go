@@ -8,6 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// mycal date YYYY-MM-DD
+// mycal date 2027-03-25 # Date in the future
+// mycal date 2026-03-18 # Date in the past
+// mycal date YYYY-MM-DD --json
+// mycal date YYYY-MM-DD --after 12:00
+// mycal date next monday
+// mycal d
+
 var dateCmd = &cobra.Command{
 	Use:     "date",
 	Aliases: []string{"d"},
