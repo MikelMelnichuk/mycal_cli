@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// mycal health
 // mycal test
 // mycal test --verbose
 
@@ -32,6 +33,6 @@ var testCMD = &cobra.Command{
 }
 
 func init() {
-	testCMD.Flags().Bool("verbose", false, "Enable verbose mode, for more logs")
+	testCMD.Flags().BoolP("verbose", "v", false, "Enable verbose mode, for more logs")
 	rootCmd.AddCommand(testCMD)
 }
