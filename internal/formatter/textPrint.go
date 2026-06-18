@@ -33,12 +33,12 @@ func PrettyPrintSingleDay(events []models.Event, verbose bool) {
 	}
 
 	// Determine column headers and widths
-	headers := []string{"Title", "Start", "End"}
-	colWidths := []int{len(headers[0]), len(headers[1]), len(headers[2])}
+	headers := []string{"Title", "Start", "End", "Location"}
+	colWidths := []int{len(headers[0]), len(headers[1]), len(headers[2]), len(headers[3])}
 
 	if verbose {
-		headers = append(headers, "ID")
-		colWidths = append(colWidths, len("ID"))
+		headers = append(headers, "Description")
+		colWidths = append(colWidths, len("Description"))
 	}
 
 	numCols := len(headers)
@@ -46,13 +46,15 @@ func PrettyPrintSingleDay(events []models.Event, verbose bool) {
 	// Collect row data and adjust column widths
 	rows := make([][]string, len(events))
 	for i, e := range events {
-		row := []string{e.Title, e.Start, e.End}
+		row := []string{e.Title, e.Start.Format("15:04"), e.End.Format("15:04"), e.Location}
 		if verbose {
-			row = append(row, e.ID)
+			description := e.Description
+			description = strings.ReplaceAll(description, "\n", " ")
+			row = append(row, description)
 		}
 		rows[i] = row
 		for j, cell := range row {
-			// Truncate the Title if needed
+			// Truncate the Title if it's too long
 			if j == 0 && utf8.RuneCountInString(cell) > 40 {
 				cell = truncate(cell, 40)
 				rows[i][j] = cell
@@ -95,7 +97,8 @@ func PrettyPrintSingleDay(events []models.Event, verbose bool) {
 
 	// Day header
 	day := events[0].Day
-	fmt.Printf("\n📅 Events for %s:\n\n", day)
+	day_date := events[0].Start.Format("2006-01-02")
+	fmt.Printf("\n📅 Events for %s (%s):\n\n", day, day_date)
 
 	// Print table
 	fmt.Println(topBorder)
