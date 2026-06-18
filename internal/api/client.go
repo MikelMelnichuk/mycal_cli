@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -193,4 +195,77 @@ func (c *Client) HealthCheckDB() error {
 	fmt.Println("Communication with backend and DB was established")
 
 	return nil
+}
+
+// CreateEventRequest defines the expected JSON payload.
+// Description and Location are optional (omitted when empty).
+type CreateEventRequest struct {
+	Title       string `json:"title"`
+	Start       string `json:"start"`
+	End         string `json:"end"`
+	Description string `json:"description,omitempty"`
+	Location    string `json:"location,omitempty"`
+}
+
+// CreateEvent sends a POST request to create a new event.
+// It returns (true, nil) if the server responds with 200 and is_successful: true.
+// If the server returns a non-200 status, or the response cannot be parsed, an error is returned.
+func (c *Client) CreateEvent(title, start, end, description, location string) (bool, error) {
+	// Build the endpoint URL
+	endpoint := c.BaseURL + "api/v1/create"
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false, fmt.Errorf("invalid base URL: %w", err)
+	}
+
+	// Marshal the request body
+	reqBody := CreateEventRequest{
+		Title:       title,
+		Start:       start,
+		End:         end,
+		Description: description,
+		Location:    location,
+	}
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(jsonData))
+	if err != nil {
+		return false, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return false, fmt.Errorf("HTTP request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check status code (200 is expected, but we also accept 2xx)
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return false, fmt.Errorf("API error: %d - %s", resp.StatusCode, string(body))
+	}
+
+	// Parse the JSON response
+	var respData struct {
+		IsSuccessful bool `json:"is_successful"`
+	}
+	if err := json.Unmarshal(body, &respData); err != nil {
+		return false, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	// Optionally log success
+	fmt.Println("Event creation request processed")
+
+	return respData.IsSuccessful, nil
 }
