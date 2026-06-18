@@ -55,6 +55,8 @@
         "editor.defaultFormatter": "vscode.json-language-features",
     },
     "cSpell.words": [
+        "Bubbletea",
+        "lipgloss",
         "Melnichuk",
         "Mikel"
     ]
