@@ -13,7 +13,6 @@ import (
 
 var (
 	enterSelectFlag int
-	enterPrintFlag  bool
 )
 
 // enterCmd represents the interactive "enter" command
@@ -23,7 +22,8 @@ var enterCmd = &cobra.Command{
 	Long: `Display events for a specific date and allow interactive selection to view full details.
 Supports natural language dates (e.g., "next monday", "today") or ISO format (YYYY-MM-DD).`,
 	Example: `  mycal enter today
-  mycal enter today --select 1 --print
+  mycal enter today --select 1  # index starts at 1 
+  mycal enter today --after 12:00
   mycal enter tomorrow
   mycal enter next friday
   mycal enter 2026-06-15`,
@@ -31,8 +31,7 @@ Supports natural language dates (e.g., "next monday", "today") or ISO format (YY
 }
 
 func init() {
-	enterCmd.Flags().IntVar(&enterSelectFlag, "select", 0, "Select an event by index (1-based) and print its details (requires --print)")
-	enterCmd.Flags().BoolVar(&enterPrintFlag, "print", false, "Print the selected event details without entering the TUI")
+	enterCmd.Flags().IntVar(&enterSelectFlag, "select", 0, "Select an event by index (1-based) and print its details")
 	enterCmd.Flags().String("after", "", "Show events starting after given time (format HH:MM)")
 	rootCmd.AddCommand(enterCmd)
 }
@@ -59,12 +58,12 @@ func runEnter(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if len(events) == 0 {
-		fmt.Println("No events found for that day.")
+		fmt.Println("No events found for this day.")
 		return nil
 	}
 
-	// Non-interactive mode: --print and --select
-	if enterPrintFlag {
+	// Non-interactive mode: --select
+	if cmd.Flags().Changed("select") {
 		if enterSelectFlag < 1 || enterSelectFlag > len(events) {
 			return fmt.Errorf("--select %d is out of range (1-%d)", enterSelectFlag, len(events))
 		}
@@ -84,13 +83,13 @@ func runEnter(cmd *cobra.Command, args []string) error {
 // printEventDetails prints a single event in a human-friendly format.
 // You can replace this with a more sophisticated formatter if needed.
 func printEventDetails(e models.Event) {
+
+	fmt.Printf("Day: %s (%s)\n", e.Day, e.Start.Format(YYYYMMDD))
 	fmt.Printf("Title:       %s\n", e.Title)
-	fmt.Printf("Start:       %s\n", e.Start)
-	fmt.Printf("End:         %s\n", e.End)
-	if e.Day != "" {
-		fmt.Printf("Day: %s\n", e.Day)
-	}
-	// Add any other fields your Event type contains
+	fmt.Printf("Start:       %s\n", e.Start.Format(HHMM))
+	fmt.Printf("End:         %s\n", e.End.Format(HHMM))
+	fmt.Printf("Location:    %s\n", e.Location)
+	fmt.Printf("Description: %s\n", e.Description)
 }
 
 // -------------------------------------------------------------------
@@ -230,7 +229,7 @@ func (m enterModel) renderList() string {
 	for i, ev := range m.events {
 		idx := fmt.Sprintf("%d.", i+1)
 		title := truncate(ev.Title, titleWidth)
-		timeStr := fmt.Sprintf("%s – %s", ev.Start, ev.End)
+		timeStr := fmt.Sprintf("%s %s – %s", ev.Start.Format(YYYYMMDD), ev.Start.Format(HHMM), ev.End.Format(HHMM))
 
 		line := fmt.Sprintf("%-*s %-*s %-*s",
 			idxWidth, idx,
@@ -313,10 +312,12 @@ func (m enterModel) renderDetail() string {
 
 	// Build content
 	var b strings.Builder
-	b.WriteString(renderField("Day", ev.Day))
+	b.WriteString(renderField("Date", fmt.Sprintf("%s (%s)", ev.Day, ev.Start.Format(YYYYMMDD))))
 	b.WriteString(renderField("Title", ev.Title))
-	b.WriteString(renderField("Start", ev.Start))
-	b.WriteString(renderField("End", ev.End))
+	b.WriteString(renderField("Start", ev.Start.Format(HHMM)))
+	b.WriteString(renderField("End", ev.End.Format(HHMM)))
+	b.WriteString(renderField("Location", ev.Location))
+	b.WriteString(renderField("Description", ev.Description))
 
 	detailContent := b.String()
 	if detailContent == "" {
