@@ -8,44 +8,51 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// mycal tomorrow
-// mycal tomorrow --json
-// mycal tomorrow --after 12:00
-// mycal tom
-
+// tomorrowCmd represents the "tomorrow" command
 var tomorrowCmd = &cobra.Command{
 	Use:     "tomorrow",
 	Aliases: []string{"tom"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var json, _ = cmd.Flags().GetBool("json")
-		var after, _ = cmd.Flags().GetString("after")
+	Short:   "Display events for tomorrow",
+	Long: `Display calendar events scheduled for tomorrow. 
+This command provides a quick look at your upcoming schedule for the next day. 
+You can filter events by start time using the --after flag, 
+or output the results in JSON format for scripting and automation.`,
+	Example: `  mycal tomorrow
+  mycal tomorrow --json
+  mycal tomorrow --after 12:00
+  mycal tom`,
+	RunE: tomorrowCommand,
+}
 
-		all := true
-		if after != "" {
-			validInput := isValidTime(after)
-			if !validInput {
-				return fmt.Errorf("Could not parse the given flag after %q, time of the format HH:MM is expected", after)
-			}
-			// When given a starting hour, all day flag is irrelevant
-			all = false
+func tomorrowCommand(cmd *cobra.Command, args []string) error {
+	var json, _ = cmd.Flags().GetBool("json")
+	var after, _ = cmd.Flags().GetString("after")
+
+	all := true
+	if after != "" {
+		validInput := isValidTime(after)
+		if !validInput {
+			return fmt.Errorf("Could not parse the given flag after %q, time of the format HH:MM is expected", after)
 		}
+		// When given a starting hour, all day flag is irrelevant
+		all = false
+	}
 
-		// Take tomorrow's date and convert to YYYYMMDD format
-		var targetDate = time.Now().AddDate(0, 0, 1).Format(YYYYMMDD)
-		tomorrowEvents, err := APIClient.GetDayEvents(targetDate, all, after)
-		if err != nil {
-			return err
-		}
+	// Take tomorrow's date and convert to YYYYMMDD format
+	var targetDate = time.Now().AddDate(0, 0, 1).Format(YYYYMMDD)
+	tomorrowEvents, err := APIClient.GetDayEvents(targetDate, all, after)
+	if err != nil {
+		return err
+	}
 
-		if json {
-			formatter.PrintJSON(tomorrowEvents)
-		} else {
-			formatter.PrettyPrintSingleDay(tomorrowEvents, true)
-		}
+	if json {
+		formatter.PrintJSON(tomorrowEvents)
+	} else {
+		formatter.PrettyPrintSingleDay(tomorrowEvents, true)
+	}
 
-		return nil
+	return nil
 
-	},
 }
 
 func init() {

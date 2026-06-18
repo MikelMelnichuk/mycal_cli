@@ -5,33 +5,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// mycal nextweek
-// mycal nextweek --json
-// mycal nw
-
-var nextWeekCMD = &cobra.Command{
+// nextWeekCmd represents the "nextweek" command
+var nextWeekCmd = &cobra.Command{
 	Use:     "nextweek",
 	Aliases: []string{"nw", "next-week"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		json, _ := cmd.Flags().GetBool("json")
+	Short:   "Display events for the upcoming week",
+	Long: `Display a summary of all calendar events scheduled for the upcoming week.
+This command provides a quick overview of your schedule for the next 7 days, 
+making it easy to plan ahead. Supports outputting the results in JSON format 
+for scripting and automation.`,
+	Example: `  mycal nextweek
+  mycal nextweek --json
+  mycal nw`,
+	RunE: nextWeekCommand,
+}
 
-		events, err := APIClient.GetWeekEvents(true, true)
-		if err != nil {
-			return nil
-		}
+func nextWeekCommand(cmd *cobra.Command, args []string) error {
+	json, _ := cmd.Flags().GetBool("json")
 
-		if json {
-			formatter.PrintJSON(events)
-		} else {
-			formatter.PrettyPrintWeek(events)
-		}
-
+	events, err := APIClient.GetWeekEvents(true, true)
+	if err != nil {
 		return nil
-	},
+	}
+
+	if json {
+		formatter.PrintJSON(events)
+	} else {
+		formatter.PrettyPrintWeek(events)
+	}
+
+	return nil
 }
 
 func init() {
-	nextWeekCMD.Flags().Bool("json", false, JsonDescription)
+	nextWeekCmd.Flags().Bool("json", false, JsonDescription)
 
-	rootCmd.AddCommand(nextWeekCMD)
+	rootCmd.AddCommand(nextWeekCmd)
 }

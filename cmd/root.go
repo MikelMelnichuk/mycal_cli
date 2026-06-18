@@ -23,27 +23,29 @@ var rootCmd = &cobra.Command{
 	Use:   "mycal",
 	Short: "CLI for managing calendar events",
 	Long: `mycal is a CLI tool to view and interact with your calendar events.
-It communicates with a backend API to fetch events for days, weeks, or specific IDs.`,
+It communicates with a backend API to fetch events for days or weeks`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help() // just show help if no subcommand is given
 	},
 	// Persistent pre-run hook initializes API client before any command runs
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// Load configuration (file, env, flags)
-		if err := initConfig(); err != nil {
-			return fmt.Errorf("failed to load config: %w", err)
-		}
+	PersistentPreRunE: preRunHook,
+}
 
-		// Create API client
-		timeout := viper.GetDuration("api.timeout")
-		if timeout == 0 {
-			timeout = api.DEFAULT_TIMEOUT
-		}
-		APIClient = api.NewClient(apiBaseURL, timeout)
+func preRunHook(cmd *cobra.Command, args []string) error {
+	// Load configuration (file, env, flags)
+	if err := initConfig(); err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
 
-		// TODO: test connectivity? we have / and /health
-		return nil
-	},
+	// Create API client
+	timeout := viper.GetDuration("api.timeout")
+	if timeout == 0 {
+		timeout = api.DEFAULT_TIMEOUT
+	}
+	APIClient = api.NewClient(apiBaseURL, timeout)
+
+	// TODO: test connectivity? we have / and /health
+	return nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -4,35 +4,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// mycal health
-// mycal test
-// mycal test --verbose
-
-var testCMD = &cobra.Command{
+// testCMD represents the "test" command (aliased as "health")
+var testCmd = &cobra.Command{
 	Use:     "test",
 	Aliases: []string{"health"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var verbose, _ = cmd.Flags().GetBool("verbose")
+	Short:   "Check the health and connectivity of the calendar service",
+	Long: `Perform a health check to verify that the CLI is properly configured 
+and can successfully connect to the calendar service. 
+This is useful for debugging connection issues, verifying your credentials, 
+or ensuring the API is reachable.`,
+	Example: `  mycal test
+  mycal health
+  mycal test --verbose`,
+	RunE: checkHealthCommand,
+}
 
-		// If verbose check of the backend connection
-		if verbose {
-			var err = APIClient.HealthCheckBackend()
-			if err != nil {
-				return err
-			}
-		}
+func checkHealthCommand(cmd *cobra.Command, args []string) error {
+	var verbose, _ = cmd.Flags().GetBool("verbose")
 
-		// In any case check of connection for the backend and DB
-		var err = APIClient.HealthCheckDB()
+	// If verbose check of the backend connection
+	if verbose {
+		var err = APIClient.HealthCheckBackend()
 		if err != nil {
 			return err
 		}
+	}
 
-		return nil
-	},
+	// In any case check of connection for the backend and DB
+	var err = APIClient.HealthCheckDB()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func init() {
-	testCMD.Flags().BoolP("verbose", "v", false, "Enable verbose mode, for more logs")
-	rootCmd.AddCommand(testCMD)
+	testCmd.Flags().BoolP("verbose", "v", false, "Enable verbose mode, for more logs")
+	rootCmd.AddCommand(testCmd)
 }

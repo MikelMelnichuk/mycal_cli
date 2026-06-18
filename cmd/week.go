@@ -5,31 +5,38 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// mycal week       # Shows the events that are yet to happen (or in progress), without the past events
-// mycal week --all # Shows all the events events of the current weak (including past)
-// mycal week --json | jq ".[] | select(.day == \"Fri\")"
-// mycal w
-
+// weekCMD represents the "week" command
 var weekCMD = &cobra.Command{
 	Use:     "week",
 	Aliases: []string{"w"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var json, _ = cmd.Flags().GetBool("json")
-		var all, _ = cmd.Flags().GetBool("all")
+	Short:   "Display events for the current week",
+	Long: `Display calendar events for the current week. 
+By default, this command only shows upcoming and in-progress events, hiding past ones. 
+Use the --all flag to include events that have already ended. 
+Supports JSON output, making it easy to pipe into tools like jq for advanced filtering.`,
+	Example: `  mycal week                                       # Shows upcoming/in-progress events (hides past)
+  mycal week --all                                   # Shows all events (including past)
+  mycal week --json | jq ".[] | select(.day == \"Fri\")" # Filter JSON output for Friday
+  mycal w`,
+	RunE: weekCommand,
+}
 
-		var weekEvents, err = APIClient.GetWeekEvents(false, all)
-		if err != nil {
-			return err
-		}
+func weekCommand(cmd *cobra.Command, args []string) error {
+	var json, _ = cmd.Flags().GetBool("json")
+	var all, _ = cmd.Flags().GetBool("all")
 
-		if json {
-			formatter.PrintJSON(weekEvents)
-		} else {
-			formatter.PrettyPrintWeek(weekEvents)
-		}
+	var weekEvents, err = APIClient.GetWeekEvents(false, all)
+	if err != nil {
+		return err
+	}
 
-		return nil
-	},
+	if json {
+		formatter.PrintJSON(weekEvents)
+	} else {
+		formatter.PrettyPrintWeek(weekEvents)
+	}
+
+	return nil
 }
 
 func init() {
